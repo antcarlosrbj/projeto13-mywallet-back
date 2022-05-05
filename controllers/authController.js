@@ -50,3 +50,66 @@ export async function signUp(req, res) {
         res.sendStatus(500);
     }
 }
+
+export async function loginToken(req, res) {
+    try {
+        const { authorization } = req.headers;
+
+        const token = authorization?.replace('Bearer ', '');
+        if (!token) return res.sendStatus(401);
+
+        const user = await db.collection("registers").findOne({token: token});
+        if(!user) return res.sendStatus(401);
+
+        delete user.password;
+        delete user.token;
+        delete user._id;
+
+        res.send(user)
+
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
+
+
+export async function loginEmail(req, res) {
+    try {
+        const login = req.body;
+
+        /* VALIDAÇÃO (JOI) */
+
+        const userSchema = joi.object({
+            email: joi.string().email().required(),
+            password: joi.string().required().min(8)
+        });
+
+        const validation = userSchema.validate(login);
+
+        if (validation.error) {
+            res.sendStatus(400);
+            return;
+        }
+
+        /* VERIFICAR NO BANCO DE DADOS */
+
+        const user = await db.collection("registers").findOne({email: login.email});
+        if(
+            !bcrypt.compareSync(login.password, user.password)
+        ) {
+            return res.sendStatus(401);
+        }
+
+        /* ENVIO DOS DADOS */
+
+        delete user.password;
+        delete user._id;
+
+        res.send(user)
+
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
