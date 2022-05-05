@@ -1,6 +1,7 @@
 import db from "./mongo.js";
 import joi from 'joi';
 import bcrypt from 'bcrypt';
+import { v4 as uuid } from 'uuid';
 
 export async function signUp(req, res) {
     try {
@@ -33,6 +34,10 @@ export async function signUp(req, res) {
         /* CRIPTOGRAFAR SENHA */
 
         user.password = bcrypt.hashSync(user.password, 10);
+
+        /* GERAR TOKEN */
+
+        user.token = uuid();
 
         /* ADICIONAR NO BANCO DE DADOS */
 
