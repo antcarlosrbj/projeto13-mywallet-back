@@ -25,7 +25,7 @@ export async function signUp(req, res) {
         /* VERIFICAÇÃO DUPLICIDADE */
 
         if (
-            await db.collection("registers").findOne({ email: user.email })
+            await db.collection("users").findOne({ email: user.email })
         ) {
             res.sendStatus(409);
             return;
@@ -41,7 +41,7 @@ export async function signUp(req, res) {
 
         /* ADICIONAR NO BANCO DE DADOS */
 
-        await db.collection("registers").insertOne(user)
+        await db.collection("users").insertOne(user)
         res.sendStatus(201);
 
 
@@ -58,7 +58,7 @@ export async function loginToken(req, res) {
         const token = authorization?.replace('Bearer ', '');
         if (!token) return res.sendStatus(401);
 
-        const user = await db.collection("registers").findOne({token: token});
+        const user = await db.collection("users").findOne({token: token});
         if(!user) return res.sendStatus(401);
 
         delete user.password;
@@ -94,7 +94,8 @@ export async function loginEmail(req, res) {
 
         /* VERIFICAR NO BANCO DE DADOS */
 
-        const user = await db.collection("registers").findOne({email: login.email});
+        const user = await db.collection("users").findOne({email: login.email});
+        if (!user) return res.sendStatus(401);
         if(
             !bcrypt.compareSync(login.password, user.password)
         ) {
