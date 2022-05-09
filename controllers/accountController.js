@@ -1,5 +1,6 @@
 import db from "./mongo.js";
 import joi from 'joi';
+import { ObjectId } from "mongodb";
 
 export async function allTransaction(req, res) {
     try {
@@ -38,6 +39,21 @@ export async function addTransaction(req, res) {
         transaction.userID = res.locals.user._id;
         transaction.date = new Date();
         await db.collection("transactions").insertOne(transaction);
+        res.sendStatus(201);
+
+    } catch (error) {
+        console.log(error);
+        res.sendStatus(500);
+    }
+}
+
+export async function deleteTransaction(req, res) {
+    try {
+        const {_id} = req.body;
+
+        /* APAGAR TRANSAÇÃO */
+
+        await db.collection("transactions").deleteOne({_id: ObjectId(_id)});
         res.sendStatus(201);
 
     } catch (error) {
