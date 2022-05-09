@@ -3,20 +3,10 @@ import joi from 'joi';
 
 export async function allTransaction(req, res) {
     try {
-        /* VERIFICAR TOKEN */
-
-        const { authorization } = req.headers;
-
-        const token = authorization?.replace('Bearer ', '');
-        if (!token) return res.sendStatus(401);
-
-        const user = await db.collection("users").findOne({token: token});
-        if(!user) return res.sendStatus(401);
 
         /* ENVIAR TRANSAÇÕES */
 
-        const transactions = await db.collection("transactions").find({userID: user._id}).toArray();
-
+        const transactions = await db.collection("transactions").find({userID: res.locals.user._id}).toArray();
         res.send(transactions);
     } catch (error) {
         console.log(error);
@@ -43,19 +33,10 @@ export async function addTransaction(req, res) {
             return;
         }
 
-        /* VERIFICAR TOKEN */
-
-        const { authorization } = req.headers;
-
-        const token = authorization?.replace('Bearer ', '');
-        if (!token) return res.sendStatus(401);
-
-        const user = await db.collection("users").findOne({token: token});
-        if(!user) return res.sendStatus(401);
-
         /* ADICIONAR NO BANCO DE DADOS */
 
-        transaction.userID = user._id;
+        transaction.userID = res.locals.user._id;
+        transaction.date = new Date();
         await db.collection("transactions").insertOne(transaction);
         res.sendStatus(201);
 
